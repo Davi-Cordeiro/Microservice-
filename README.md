@@ -1,666 +1,807 @@
-# Documentação do Projeto — Marketplace Distribuído (Django + Spring Boot)
+<h1 align="center">🛒 Marketplace Distribuído</h1>
 
-## Sumário
+<p align="center">
+  Projeto de estudo de uma aplicação de e-commerce distribuída em dois serviços independentes.
+</p>
 
-1. Visão Geral
-2. Arquitetura do Sistema
-3. Parte Django — Detalhamento Completo
-4. Parte Spring Boot — Detalhamento Completo
-5. Contrato de API entre os Serviços
-6. Banco de Dados (Modelagem Detalhada)
-7. Fluxo Completo de uma Compra
-8. Segurança e Autenticação
-9. Tratamento de Erros
-10. Testes
-11. Cronograma Sugerido
-12. Organização em Git
-13. Dicas Gerais e Boas Práticas
-14. Ideias de Expansão (Extras)
+<p align="center">
+  <b>Django</b> para catálogo, usuários, carrinho e frontend
+  <br>
+  <b>Spring Boot</b> para processamento e persistência de pedidos
+</p>
 
----
+<hr>
 
-## 1. Visão Geral
+<h2>📌 Visão Geral</h2>
 
-O projeto é um **marketplace simples** dividido em dois serviços independentes que se comunicam via **API REST (JSON sobre HTTP)**:
+<p>
+Este projeto consiste em uma aplicação de e-commerce dividida em dois serviços,
+desenvolvidos com tecnologias diferentes e responsáveis por domínios distintos.
+</p>
 
-- **Serviço A — Catálogo e Frontend** (Django + JS + Tailwind): responsável pela experiência do usuário, catálogo de produtos, carrinho e autenticação.
-- **Serviço B — Pedidos e Pagamentos** (Spring Boot + JDBC): responsável por processar pedidos, calcular valores, simular pagamento e manter o histórico.
+<ul>
+  <li><b>Django:</b> catálogo, usuários, carrinho e interface web.</li>
+  <li><b>Spring Boot:</b> processamento, regras de negócio e persistência dos pedidos.</li>
+</ul>
 
-Essa separação simula uma **arquitetura de microsserviços real**, onde cada equipe é dona de uma parte do sistema, com seu próprio banco de dados, e a comunicação acontece exclusivamente por API — nunca acessando o banco um do outro diretamente.
+<p>
+A comunicação entre os serviços será realizada através de uma
+<b>API REST utilizando JSON sobre HTTP</b>.
+</p>
 
-### Por que essa divisão faz sentido
-- Você pratica Django puro (models, views, templates ou API), além de JS/Tailwind no front.
-- Seu amigo pratica POO aplicada (classes de domínio), JDBC (acesso a banco sem ORM) e Spring Boot (camada REST).
-- Ambos praticam **integração entre sistemas heterogêneos**, um dos temas mais cobrados em entrevistas técnicas.
+<blockquote>
+  <b>Status atual:</b> o serviço Spring Boot já possui o fluxo básico de criação
+  e persistência de pedidos implementado. O serviço Django ainda está em fase
+  inicial de estruturação.
+</blockquote>
 
----
+<hr>
 
-## 2. Arquitetura do Sistema
+<h2>🏗️ Arquitetura</h2>
 
-```
-┌─────────────────────┐
-│   Navegador (User)  │
-└─────────┬────────────┘
-          │ HTTP (HTML/JS)
-          ▼
-┌───────────────────────────────────────┐
-│         SERVIÇO A — DJANGO             │
-│  - Views/Templates ou API              │
-│  - Autenticação de usuário             │
-│  - Catálogo de produtos                │
-│  - Carrinho de compras                 │
-│  - Banco: SQLite ou PostgreSQL         │
-└─────────┬───────────────────────────────┘
-          │ POST /api/pedidos (JSON)
-          ▼
-┌───────────────────────────────────────┐
-│       SERVIÇO B — SPRING BOOT          │
-│  - REST Controller                     │
-│  - Regras de negócio (POO)             │
-│  - Acesso a dados via JDBC             │
-│  - Banco: MySQL ou PostgreSQL          │
-└─────────────────────────────────────────┘
-```
+<pre>
+                         ┌─────────────────────┐
+                         │     Navegador       │
+                         │       Usuário       │
+                         └──────────┬──────────┘
+                                    │
+                                    │ HTTP
+                                    ▼
+              ┌────────────────────────────────────┐
+              │           SERVIÇO A                │
+              │             Django                 │
+              │                                    │
+              │  • Catálogo                        │
+              │  • Usuários                        │
+              │  • Carrinho                        │
+              │  • Frontend                        │
+              │  • Integração com pedidos          │
+              │                                    │
+              │  Banco próprio                     │
+              └────────────────┬───────────────────┘
+                               │
+                               │ HTTP / JSON
+                               │
+                               │ POST /api/pedidos
+                               ▼
+              ┌────────────────────────────────────┐
+              │           SERVIÇO B                │
+              │          Spring Boot               │
+              │                                    │
+              │  • REST Controller                 │
+              │  • Regras de negócio               │
+              │  • Domínio de pedidos              │
+              │  • JDBC puro                       │
+              │                                    │
+              │  Banco próprio                     │
+              └────────────────────────────────────┘
+</pre>
 
-### Por que dois bancos separados?
-Isso reforça o conceito de que cada serviço é **dono dos seus próprios dados** (padrão em microsserviços). O Django nunca lê diretamente o banco do Spring, e vice-versa — tudo passa pela API.
+<p>
+Cada serviço possui responsabilidade sobre seus próprios dados.
+O Spring Boot não acessa diretamente as tabelas do Django e o Django
+não acessa diretamente o banco do Spring Boot.
+</p>
 
----
+<hr>
 
-## 3. Parte Django — Detalhamento Completo
+<h2>📊 Estado Atual do Projeto</h2>
 
-### 3.1 Estrutura de pastas sugerida
+<h3>🐍 Django</h3>
 
-```
-marketplace_django/
+<p>
+O projeto Django já possui a estrutura inicial criada, incluindo:
+</p>
+
+<ul>
+  <li>Projeto Django</li>
+  <li><code>manage.py</code></li>
+  <li>Configuração inicial do projeto</li>
+  <li>Aplicação <code>produtos</code></li>
+  <li>Configuração inicial do banco SQLite</li>
+  <li>Django Admin e componentes padrão</li>
+</ul>
+
+<p>
+Atualmente, a aplicação <code>produtos</code> ainda está em desenvolvimento.
+Os models, views, catálogo, carrinho, frontend e integração com o Spring Boot
+ainda serão implementados.
+</p>
+
+<h4>Estrutura atual</h4>
+
+<pre>
+ecommerc_django/
 ├── manage.py
-├── marketplace/          # configurações do projeto
+│
+├── ecommerc_django/
+│   ├── __init__.py
 │   ├── settings.py
 │   ├── urls.py
-├── produtos/             # app de catálogo
-│   ├── models.py
-│   ├── views.py
-│   ├── serializers.py
-│   ├── urls.py
-├── contas/               # app de autenticação
-│   ├── models.py
-│   ├── views.py
-├── carrinho/             # app do carrinho
-│   ├── models.py
-│   ├── views.py
-├── pedidos/              # app que integra com Spring Boot
-│   ├── services.py       # lógica de chamada HTTP
-│   ├── views.py
-├── static/
-│   ├── css/ (tailwind)
-│   ├── js/
-├── templates/
-```
-
-### 3.2 Modelos (models.py)
-
-```python
-# produtos/models.py
-from django.db import models
-
-class Categoria(models.Model):
-    nome = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.nome
-
-
-class Produto(models.Model):
-    nome = models.CharField(max_length=200)
-    descricao = models.TextField(blank=True)
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
-    estoque = models.PositiveIntegerField(default=0)
-    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
-    imagem = models.ImageField(upload_to='produtos/', blank=True, null=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.nome
-```
-
-```python
-# carrinho/models.py
-from django.db import models
-from django.contrib.auth.models import User
-from produtos.models import Produto
-
-class ItemCarrinho(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    quantidade = models.PositiveIntegerField(default=1)
-    adicionado_em = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('usuario', 'produto')
-```
-
-### 3.3 Views principais (exemplo simplificado com Django REST Framework)
-
-```python
-# produtos/views.py
-from rest_framework import viewsets
-from .models import Produto
-from .serializers import ProdutoSerializer
-
-class ProdutoViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Produto.objects.all()
-    serializer_class = ProdutoSerializer
-```
-
-```python
-# pedidos/services.py — Serviço que fala com o Spring Boot
-import requests
-from django.conf import settings
-
-SPRING_BOOT_URL = settings.SPRING_BOOT_URL  # ex: "http://localhost:8080"
-
-def criar_pedido(usuario_id, itens):
-    payload = {
-        "usuarioId": usuario_id,
-        "itens": [
-            {
-                "produtoId": item.produto.id,
-                "quantidade": item.quantidade,
-                "precoUnitario": float(item.produto.preco)
-            }
-            for item in itens
-        ]
-    }
-
-    resposta = requests.post(
-        f"{SPRING_BOOT_URL}/api/pedidos",
-        json=payload,
-        timeout=5
-    )
-    resposta.raise_for_status()
-    return resposta.json()
-```
-
-```python
-# pedidos/views.py
-from django.http import JsonResponse
-from carrinho.models import ItemCarrinho
-from .services import criar_pedido
-
-def finalizar_compra(request):
-    itens = ItemCarrinho.objects.filter(usuario=request.user)
-
-    if not itens.exists():
-        return JsonResponse({"erro": "Carrinho vazio"}, status=400)
-
-    try:
-        resultado = criar_pedido(request.user.id, itens)
-    except Exception as e:
-        return JsonResponse({"erro": "Falha ao processar pedido", "detalhe": str(e)}, status=502)
-
-    itens.delete()  # limpa carrinho após sucesso
-    return JsonResponse(resultado)
-```
-
-### 3.4 Frontend (JS + Tailwind)
-
-**Dicas de implementação:**
-- Use `fetch()` para adicionar/remover itens do carrinho sem recarregar a página.
-- Mostre um "spinner" de carregamento ao clicar em "Finalizar Compra" (o Spring Boot pode demorar alguns milissegundos a segundos para responder).
-- Trate erros de rede visualmente — ex: se o Spring Boot estiver fora do ar, mostre uma mensagem amigável, não uma tela quebrada.
-
-```javascript
-// static/js/checkout.js
-async function finalizarCompra() {
-    const btn = document.getElementById('btn-checkout');
-    btn.disabled = true;
-    btn.innerText = 'Processando...';
-
-    try {
-        const resposta = await fetch('/pedidos/finalizar/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') }
-        });
-
-        if (!resposta.ok) throw new Error('Erro ao finalizar compra');
-
-        const dados = await resposta.json();
-        alert(`Pedido #${dados.pedidoId} — Status: ${dados.status}`);
-    } catch (erro) {
-        alert('Não foi possível processar seu pedido agora. Tente novamente.');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = 'Finalizar Compra';
-    }
-}
-```
-
----
-
-## 4. Parte Spring Boot — Detalhamento Completo
-
-### 4.1 Estrutura de pastas sugerida
-
-```
-marketplace-pedidos/
-├── src/main/java/com/marketplace/pedidos/
-│   ├── PedidosApplication.java
-│   ├── controller/
-│   │   └── PedidoController.java
-│   ├── model/
-│   │   ├── Pedido.java
-│   │   ├── ItemPedido.java
-│   │   └── StatusPedido.java (enum)
-│   ├── repository/
-│   │   └── PedidoRepository.java   # usando JDBC puro
-│   ├── service/
-│   │   └── PedidoService.java
-│   ├── dto/
-│   │   ├── PedidoRequestDTO.java
-│   │   └── PedidoResponseDTO.java
-│   └── config/
-│       └── DataSourceConfig.java
-├── src/main/resources/
-│   ├── application.properties
-│   └── schema.sql
-```
-
-### 4.2 Classes de domínio (POO)
-
-```java
-// model/StatusPedido.java
-public enum StatusPedido {
-    PENDENTE, APROVADO, RECUSADO
-}
-```
-
-```java
-// model/ItemPedido.java
-public class ItemPedido {
-    private Long produtoId;
-    private int quantidade;
-    private double precoUnitario;
-
-    // construtor, getters e setters
-
-    public double getSubtotal() {
-        return quantidade * precoUnitario;
-    }
-}
-```
-
-```java
-// model/Pedido.java
-import java.time.LocalDateTime;
-import java.util.List;
-
-public class Pedido {
-    private Long id;
-    private Long usuarioId;
-    private List<ItemPedido> itens;
-    private double valorTotal;
-    private StatusPedido status;
-    private LocalDateTime criadoEm;
-
-    public double calcularTotal() {
-        return itens.stream()
-                .mapToDouble(ItemPedido::getSubtotal)
-                .sum();
-    }
-
-    // construtor, getters e setters
-}
-```
-
-### 4.3 Acesso a dados com JDBC puro
-
-```java
-// repository/PedidoRepository.java
-import java.sql.*;
-
-public class PedidoRepository {
-
-    private final DataSource dataSource;
-
-    public PedidoRepository(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public Long salvar(Pedido pedido) throws SQLException {
-        String sql = "INSERT INTO pedido (usuario_id, valor_total, status, criado_em) VALUES (?, ?, ?, NOW())";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setLong(1, pedido.getUsuarioId());
-            stmt.setDouble(2, pedido.getValorTotal());
-            stmt.setString(3, pedido.getStatus().name());
-            stmt.executeUpdate();
-
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getLong(1);
-            }
-            throw new SQLException("Falha ao obter ID gerado");
-        }
-    }
-
-    public Pedido buscarPorId(Long id) throws SQLException {
-        String sql = "SELECT * FROM pedido WHERE id = ?";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, id);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                Pedido pedido = new Pedido();
-                pedido.setId(rs.getLong("id"));
-                pedido.setUsuarioId(rs.getLong("usuario_id"));
-                pedido.setValorTotal(rs.getDouble("valor_total"));
-                pedido.setStatus(StatusPedido.valueOf(rs.getString("status")));
-                return pedido;
-            }
-            return null;
-        }
-    }
-}
-```
-
-### 4.4 Controller REST
-
-```java
-// controller/PedidoController.java
-import org.springframework.web.bind.annotation.*;
-import com.marketplace.pedidos.dto.*;
-import com.marketplace.pedidos.service.PedidoService;
-
-@RestController
-@RequestMapping("/api/pedidos")
-public class PedidoController {
-
-    private final PedidoService pedidoService;
-
-    public PedidoController(PedidoService pedidoService) {
-        this.pedidoService = pedidoService;
-    }
-
-    @PostMapping
-    public PedidoResponseDTO criarPedido(@RequestBody PedidoRequestDTO request) {
-        return pedidoService.processarPedido(request);
-    }
-
-    @GetMapping("/{id}")
-    public PedidoResponseDTO buscarPedido(@PathVariable Long id) {
-        return pedidoService.buscarPorId(id);
-    }
-}
-```
-
-### 4.5 Regra de negócio (simulação de pagamento)
-
-```java
-// service/PedidoService.java
-public class PedidoService {
-
-    private final PedidoRepository repository;
-
-    public PedidoService(PedidoRepository repository) {
-        this.repository = repository;
-    }
-
-    public PedidoResponseDTO processarPedido(PedidoRequestDTO request) {
-        Pedido pedido = converterParaPedido(request);
-        pedido.setValorTotal(pedido.calcularTotal());
-
-        // Regra simples de simulação de pagamento
-        StatusPedido status = simularPagamento(pedido.getValorTotal());
-        pedido.setStatus(status);
-
-        try {
-            Long id = repository.salvar(pedido);
-            pedido.setId(id);
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao salvar pedido", e);
-        }
-
-        return new PedidoResponseDTO(pedido.getId(), pedido.getStatus(), pedido.getValorTotal());
-    }
-
-    private StatusPedido simularPagamento(double valor) {
-        // Regra fictícia: valores acima de 1000 são recusados (simula limite de crédito)
-        return valor <= 1000 ? StatusPedido.APROVADO : StatusPedido.RECUSADO;
-    }
-}
-```
-
----
-
-## 5. Contrato de API entre os Serviços
-
-**Combinem isso ANTES de codar** — é o ponto mais importante para não ter retrabalho.
-
-### Requisição: Django → Spring Boot
-
-`POST /api/pedidos`
-
-```json
+│   ├── asgi.py
+│   └── wsgi.py
+│
+└── produtos/
+    ├── __init__.py
+    ├── admin.py
+    ├── apps.py
+    ├── migrations/
+    ├── models.py
+    ├── tests.py
+    └── views.py
+</pre>
+
+<h4>Próximas etapas do Django</h4>
+
+<ul>
+  <li>Implementar <code>Categoria</code></li>
+  <li>Implementar <code>Produto</code></li>
+  <li>Criar migrations</li>
+  <li>Implementar catálogo</li>
+  <li>Implementar autenticação</li>
+  <li>Criar carrinho</li>
+  <li>Desenvolver frontend</li>
+  <li>Implementar checkout</li>
+  <li>Criar cliente HTTP para o Spring Boot</li>
+  <li>Integrar o fluxo completo de compra</li>
+</ul>
+
+<hr>
+
+<h3>☕ Spring Boot</h3>
+
+<p>
+O serviço Spring Boot é atualmente a parte mais desenvolvida do projeto.
+</p>
+
+<p>
+O backend foi desenvolvido utilizando:
+</p>
+
+<ul>
+  <li><b>Java</b></li>
+  <li><b>Spring Boot</b></li>
+  <li><b>JDBC puro</b></li>
+  <li><b>SQL</b></li>
+  <li><b>Bean Validation</b></li>
+</ul>
+
+<p>
+O projeto não utiliza JPA/Hibernate, permitindo trabalhar diretamente
+com JDBC e compreender melhor o processo de persistência e transações.
+</p>
+
+<h4>Estrutura</h4>
+
+<pre>
+pedidos/
+├── pom.xml
+│
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/ecommerce/pedidos/
+│   │   │       ├── PedidosApplication.java
+│   │   │       │
+│   │   │       ├── controller/
+│   │   │       │   └── PedidoController.java
+│   │   │       │
+│   │   │       ├── model/
+│   │   │       │   ├── Pedido.java
+│   │   │       │   ├── ItemPedido.java
+│   │   │       │   └── StatusPedido.java
+│   │   │       │
+│   │   │       ├── dto/
+│   │   │       │   ├── ItemRequestDTO.java
+│   │   │       │   ├── PedidoRequestDTO.java
+│   │   │       │   ├── PedidoResponseDTO.java
+│   │   │       │   └── PedidoMapper.java
+│   │   │       │
+│   │   │       ├── repository/
+│   │   │       │   └── PedidoRepository.java
+│   │   │       │
+│   │   │       └── service/
+│   │   │           ├── PedidoService.java
+│   │   │           └── RegraAprovacaoService.java
+│   │   │
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── schema.sql
+│   │
+│   └── test/
+│       └── java/
+│           └── com/ecommerce/pedidos/
+│               └── PedidosApplicationTests.java
+</pre>
+
+<hr>
+
+<h2>📦 Domínio</h2>
+
+<h3>Pedido</h3>
+
+<p>Um pedido possui:</p>
+
+<ul>
+  <li>ID</li>
+  <li>ID do usuário</li>
+  <li>Status</li>
+  <li>Valor total</li>
+  <li>Data de criação</li>
+  <li>Lista de itens</li>
+</ul>
+
+<pre>
+Pedido
+├── id
+├── usuarioId
+├── status
+├── valorTotal
+├── dataCriacao
+└── itens
+</pre>
+
+<p>
+O valor total é calculado a partir dos subtotais dos itens do pedido.
+</p>
+
+<h3>ItemPedido</h3>
+
+<p>Cada item possui:</p>
+
+<ul>
+  <li>ID do produto</li>
+  <li>Quantidade</li>
+  <li>Preço unitário</li>
+</ul>
+
+<p>
+O subtotal é calculado através de:
+</p>
+
+<pre>subtotal = preço unitário × quantidade</pre>
+
+<h3>StatusPedido</h3>
+
+<p>Atualmente existem dois estados:</p>
+
+<pre>
+APROVADO
+RECUSADO
+</pre>
+
+<hr>
+
+<h2>📨 DTOs</h2>
+
+<p>
+A API utiliza DTOs para separar os dados recebidos pela API dos objetos
+internos de domínio.
+</p>
+
+<h3>PedidoRequestDTO</h3>
+
+<pre>
 {
   "usuarioId": 1,
   "itens": [
-    { "produtoId": 5, "quantidade": 2, "precoUnitario": 49.90 },
-    { "produtoId": 8, "quantidade": 1, "precoUnitario": 19.90 }
+    {
+      "produtoId": 5,
+      "quantidade": 2,
+      "precoUnitario": 49.90
+    }
   ]
 }
-```
+</pre>
 
-### Resposta: Spring Boot → Django
+<p>Os dados recebidos possuem validações utilizando Bean Validation:</p>
 
-```json
+<ul>
+  <li><code>usuarioId</code> não pode ser nulo</li>
+  <li>A lista de itens não pode estar vazia</li>
+  <li><code>produtoId</code> não pode ser nulo</li>
+  <li>Quantidade deve ser positiva</li>
+  <li>Preço deve ser positivo</li>
+</ul>
+
+<h3>PedidoResponseDTO</h3>
+
+<pre>
+{
+  "pedidoId": 42,
+  "status": "APROVADO",
+  "valorTotal": 99.80
+}
+</pre>
+
+<hr>
+
+<h2>🔄 Mapper</h2>
+
+<p>
+O <code>PedidoMapper</code> é responsável pela conversão entre os objetos
+da API e os objetos de domínio.
+</p>
+
+<pre>
+PedidoRequestDTO
+        ↓
+      Pedido
+        ↓
+PedidoResponseDTO
+</pre>
+
+<p>
+Essa separação evita que os DTOs da API sejam utilizados diretamente como
+objetos de domínio.
+</p>
+
+<hr>
+
+<h2>💳 Regra de Aprovação</h2>
+
+<p>
+O serviço possui uma regra simples para simular uma análise de pagamento.
+</p>
+
+<pre>
+Valor ≤ R$ 5.000,00
+        ↓
+    APROVADO
+
+Valor > R$ 5.000,00
+        ↓
+    RECUSADO
+</pre>
+
+<p>
+A regra está isolada na classe <code>RegraAprovacaoService</code>, permitindo
+que sua implementação seja alterada futuramente sem misturar a lógica de
+negócio com a persistência ou o Controller.
+</p>
+
+<hr>
+
+<h2>🌐 API</h2>
+
+<h3>POST /api/pedidos</h3>
+
+<p><b>Objetivo:</b> criar um novo pedido.</p>
+
+<h4>Request</h4>
+
+<pre>
+{
+  "usuarioId": 1,
+  "itens": [
+    {
+      "produtoId": 5,
+      "quantidade": 2,
+      "precoUnitario": 49.90
+    },
+    {
+      "produtoId": 8,
+      "quantidade": 1,
+      "precoUnitario": 19.90
+    }
+  ]
+}
+</pre>
+
+<h4>Response</h4>
+
+<pre>
 {
   "pedidoId": 42,
   "status": "APROVADO",
   "valorTotal": 119.70
 }
-```
+</pre>
 
-### Consulta de status
+<h4>Fluxo</h4>
 
-`GET /api/pedidos/{id}`
+<pre>
+HTTP Request
+     ↓
+PedidoController
+     ↓
+PedidoService
+     ↓
+PedidoMapper
+     ↓
+Calcula total
+     ↓
+RegraAprovacaoService
+     ↓
+PedidoRepository
+     ↓
+Banco de dados
+     ↓
+PedidoResponseDTO
+     ↓
+HTTP Response
+</pre>
 
-```json
-{
-  "pedidoId": 42,
-  "status": "APROVADO",
-  "valorTotal": 119.70
-}
-```
+<hr>
 
-**Dica:** documentem esse contrato num arquivo `API_CONTRACT.md` compartilhado no repositório, ou usem uma ferramenta como **Swagger/OpenAPI** no Spring Boot para gerar documentação automática.
+<h2>🗄️ Persistência</h2>
 
----
+<p>
+A persistência do serviço Spring Boot utiliza <b>JDBC puro</b>, sem
+JPA ou Hibernate.
+</p>
 
-## 6. Banco de Dados (Modelagem Detalhada)
+<p>São utilizados diretamente:</p>
 
-### Banco do Django (SQLite ou PostgreSQL)
+<ul>
+  <li><code>DataSource</code></li>
+  <li><code>Connection</code></li>
+  <li><code>PreparedStatement</code></li>
+  <li><code>ResultSet</code></li>
+  <li><code>Statement.RETURN_GENERATED_KEYS</code></li>
+</ul>
 
-```
-categoria
-├── id (PK)
-└── nome
+<p>
+A criação do pedido utiliza uma transação para garantir que o pedido e
+seus respectivos itens sejam persistidos juntos.
+</p>
 
-produto
-├── id (PK)
-├── nome
-├── descricao
-├── preco
-├── estoque
-├── categoria_id (FK → categoria)
-└── criado_em
+<pre>
+BEGIN TRANSACTION
+        ↓
+INSERT pedido
+        ↓
+Obtém ID gerado
+        ↓
+INSERT itens
+        ↓
+COMMIT
+</pre>
 
-auth_user (padrão do Django)
-├── id (PK)
-├── username
-├── email
-└── password (hash)
+<p>
+Caso ocorra uma falha durante a operação:
+</p>
 
-item_carrinho
-├── id (PK)
-├── usuario_id (FK → auth_user)
-├── produto_id (FK → produto)
-└── quantidade
-```
+<pre>ROLLBACK</pre>
 
-### Banco do Spring Boot (MySQL ou PostgreSQL)
+<hr>
 
-```sql
--- schema.sql
-CREATE TABLE pedido (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id BIGINT NOT NULL,
-    valor_total DECIMAL(10,2) NOT NULL,
-    status VARCHAR(20) NOT NULL,
-    criado_em DATETIME NOT NULL
-);
+<h2>💰 Valores Monetários</h2>
 
-CREATE TABLE item_pedido (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    pedido_id BIGINT NOT NULL,
-    produto_id BIGINT NOT NULL,
-    quantidade INT NOT NULL,
-    preco_unitario DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (pedido_id) REFERENCES pedido(id)
-);
-```
+<p>
+Os valores financeiros são representados através de
+<code>BigDecimal</code>.
+</p>
 
-**Observação:** o `usuario_id` e `produto_id` no banco do Spring são apenas referências numéricas — o Spring Boot **não** tem acesso direto às tabelas de usuário/produto do Django. Ele só recebe os dados já prontos via API.
+<p>
+A escolha evita problemas de precisão associados ao uso de
+<code>double</code> e <code>float</code> em operações monetárias.
+</p>
 
----
+<hr>
 
-## 7. Fluxo Completo de uma Compra
+<h2>🗃️ Banco de Dados</h2>
 
-1. Usuário navega pelo catálogo (Django) e adiciona produtos ao carrinho.
-2. Ao clicar em "Finalizar Compra", o JS do frontend chama `/pedidos/finalizar/` (Django).
-3. Django monta o payload com os itens do carrinho e faz um `POST` para o Spring Boot.
-4. Spring Boot recebe, calcula o total, simula o pagamento, salva no banco via JDBC.
-5. Spring Boot responde com `pedidoId`, `status` e `valorTotal`.
-6. Django recebe a resposta, limpa o carrinho do usuário e repassa o resultado para o frontend.
-7. Frontend mostra a confirmação (ou erro) para o usuário.
+<h3>pedido</h3>
 
----
+<pre>
+pedido
+├── id
+├── usuario_id
+├── status
+├── valor_total
+└── data_criacao
+</pre>
 
-## 8. Segurança e Autenticação
+<h3>item_pedido</h3>
 
-Para deixar mais realista (e ótimo para portfólio), considerem:
+<pre>
+item_pedido
+├── id
+├── pedido_id
+├── produto_id
+├── quantidade
+└── preco_unitario
+</pre>
 
-- **Comunicação entre serviços protegida por token**: o Django envia um header `Authorization: Bearer <token>` fixo (ou JWT simples) e o Spring Boot valida antes de processar.
-- **CORS**: se o frontend chamar o Spring Boot diretamente (não recomendado neste design, mas possível), configurem CORS no Spring Boot.
-- **Nunca exponham o segredo/token no código do frontend (JS)** — a chamada ao Spring Boot deve ser feita pelo backend Django, não pelo navegador do usuário.
+<p>Relacionamento:</p>
 
----
+<pre>
+pedido
+   │
+   │ 1:N
+   ▼
+item_pedido
+</pre>
 
-## 9. Tratamento de Erros
+<p>
+O banco do Spring armazena apenas os IDs de usuário e produto recebidos
+pela API. Não existem relacionamentos diretos com as tabelas pertencentes
+ao serviço Django.
+</p>
 
-| Cenário | O que fazer |
-|---|---|
-| Spring Boot fora do ar | Django captura exceção de conexão e mostra mensagem amigável ("Não foi possível processar seu pedido agora") |
-| Timeout na chamada | Definir timeout curto (ex: 5s) na requisição e tratar como falha |
-| Payload inválido | Spring Boot retorna `400 Bad Request` com mensagem clara |
-| Pedido recusado (simulação) | Retornar `200 OK` com `status: RECUSADO` (não é erro técnico, é uma resposta de negócio válida) |
-| Erro interno no Spring Boot | Retornar `500` com corpo JSON padronizado, ex: `{"erro": "Erro interno"}` |
+<hr>
 
----
+<h2>🔗 Integração Django → Spring Boot</h2>
 
-## 10. Testes
+<p>
+A integração planejada seguirá o seguinte fluxo:
+</p>
 
-### Lado Django
-- Testes unitários com `pytest` ou `unittest` para models e views.
-- Mock da chamada HTTP ao Spring Boot (usando `unittest.mock` ou `responses`) para testar sem depender do serviço estar no ar.
+<pre>
+Usuário
+   ↓
+Django
+   ↓
+Carrinho
+   ↓
+Finalizar compra
+   ↓
+POST /api/pedidos
+   ↓
+Spring Boot
+   ↓
+Processamento do pedido
+   ↓
+Banco
+   ↓
+Resposta JSON
+   ↓
+Django
+   ↓
+Frontend
+</pre>
 
-### Lado Spring Boot
-- Testes unitários com **JUnit** para a lógica de `PedidoService` (ex: testar a regra de aprovação/recusa).
-- Testes de integração usando **Postman/Insomnia** para validar os endpoints manualmente antes de conectar com o Django.
+<p>
+O Django será responsável por montar a requisição a partir dos produtos
+presentes no carrinho.
+</p>
 
-### Testando a integração completa
-1. Subam os dois serviços localmente (`python manage.py runserver` na porta 8000, Spring Boot na porta 8080).
-2. Testem o fluxo completo manualmente pelo navegador.
-3. Depois, se quiserem ir além, escrevam um teste end-to-end simples (ex: com `requests` em Python ou um script separado) que simula o fluxo inteiro.
+<p>
+O Spring Boot será responsável pelo processamento e persistência do pedido.
+</p>
 
----
+<hr>
 
-## 11. Cronograma Sugerido (5 semanas)
+<h2>🧪 Testes</h2>
 
-| Semana | Django (você) | Spring Boot (seu amigo) |
-|---|---|---|
-| 1 | Setup do projeto, models de produto/categoria, autenticação básica | Setup do projeto, conexão JDBC, schema do banco |
-| 2 | CRUD de produtos, carrinho de compras | Classes de domínio (POO), repository com JDBC |
-| 3 | Frontend com Tailwind, JS para carrinho dinâmico | Controller REST, regra de simulação de pagamento |
-| 4 | Integração: chamar API do Spring Boot, tratar respostas | Testar recebimento de pedidos, ajustar contrato de API |
-| 5 | Testes, tratamento de erros, polimento visual | Testes, tratamento de erros, documentação da API |
+<h3>Spring Boot</h3>
 
----
+<p>
+O projeto possui a estrutura inicial de testes. A cobertura será ampliada
+conforme as funcionalidades forem desenvolvidas.
+</p>
 
-## 12. Organização em Git
+<p>Os próximos testes devem cobrir:</p>
 
-Sugestão de estrutura de repositórios:
+<ul>
+  <li>Cálculo do total</li>
+  <li>Subtotal dos itens</li>
+  <li>Regra de aprovação</li>
+  <li>Regra de recusa</li>
+  <li>Validação dos DTOs</li>
+  <li><code>PedidoService</code></li>
+  <li>Persistência</li>
+  <li>Endpoint REST</li>
+</ul>
 
-**Opção 1 — Dois repositórios separados** (mais realista para microsserviços)
-```
-marketplace-django/
-marketplace-pedidos-spring/
-```
+<h3>Django</h3>
 
-**Opção 2 — Monorepo** (mais simples de gerenciar a dois)
-```
-marketplace-projeto/
-├── django-app/
-├── spring-app/
-└── README.md (documentação geral, como este arquivo)
-```
+<p>
+Os testes serão implementados conforme as funcionalidades do serviço
+forem desenvolvidas.
+</p>
 
-**Dicas de fluxo de trabalho:**
-- Usem branches por funcionalidade (`feature/carrinho`, `feature/pedido-service`).
-- Façam um `README.md` em cada projeto explicando como rodar localmente (dependências, comandos, variáveis de ambiente).
-- Combinem previamente as portas usadas (ex: Django na 8000, Spring Boot na 8080) para evitar conflito ao rodar os dois ao mesmo tempo.
+<h3>Integração</h3>
 
----
+<p>
+Após a implementação dos dois serviços, será testado o fluxo completo:
+</p>
 
-## 13. Dicas Gerais e Boas Práticas
+<pre>
+Django
+  ↓
+POST /api/pedidos
+  ↓
+Spring Boot
+  ↓
+Banco
+  ↓
+Response
+  ↓
+Django
+</pre>
 
-- **Definam o contrato de API por escrito antes de codar** — evita retrabalho e discussões no meio do projeto.
-- **Usem variáveis de ambiente** para URLs e portas (ex: `SPRING_BOOT_URL` no Django), nunca hardcode.
-- **Loguem as chamadas entre os serviços** (prints ou logs simples) para facilitar debug quando algo não funcionar.
-- **Comecem simples**: façam o fluxo básico funcionar ponta a ponta primeiro (mesmo sem estilização), depois refinem.
-- **Usem Postman/Insomnia** para testar cada endpoint isoladamente antes de integrar os dois sistemas.
-- Se travarem na integração, testem com `curl` direto no terminal para isolar se o problema é no client (Django) ou no server (Spring Boot).
+<hr>
 
-```bash
-# Exemplo de teste manual com curl
-curl -X POST http://localhost:8080/api/pedidos \
-  -H "Content-Type: application/json" \
-  -d '{"usuarioId": 1, "itens": [{"produtoId": 5, "quantidade": 2, "precoUnitario": 49.90}]}'
-```
+<h2>🔐 Segurança</h2>
 
----
+<p>
+A segurança ainda não está completamente implementada.
+</p>
 
-## 14. Ideias de Expansão (Extras, se sobrar tempo)
+<p>Como evolução futura, estão previstas:</p>
 
-- **Avaliações de produtos** (comentários e notas) no Django.
-- **Painel administrativo** no Spring Boot para o "lojista" ver todos os pedidos.
-- **Fila assíncrona**: em vez de chamada HTTP síncrona, usar uma fila (RabbitMQ) entre os dois serviços — mais avançado, mas ótimo para aprender mensageria.
-- **Autenticação real entre serviços** com JWT.
-- **Deploy**: Django no Render/Railway, Spring Boot também no Render ou num servidor separado, simulando ambiente de produção real.
-- **Notificação por e-mail** ao usuário quando o pedido for aprovado (Django pode fazer isso após receber a resposta do Spring Boot).
+<ul>
+  <li>Variáveis de ambiente para configurações sensíveis</li>
+  <li>Proteção da comunicação entre os serviços</li>
+  <li>Autenticação entre Django e Spring Boot</li>
+  <li>Configuração adequada de CORS</li>
+  <li>Configuração de produção do Django</li>
+  <li>Remoção de secrets do código-fonte</li>
+</ul>
 
----
+<hr>
 
-### Resumo final
+<h2>🚧 Próximas Etapas</h2>
 
-Esse projeto cobre, de forma bem equilibrada:
+<h3>Django</h3>
 
-- **Você**: Django (models, views, API), autenticação, JS assíncrono, Tailwind, consumo de API externa.
-- **Seu amigo**: POO aplicada, JDBC puro (sem ORM), Spring Boot REST, regras de negócio.
-- **Os dois**: integração entre sistemas, contrato de API, tratamento de erros entre serviços, versionamento em Git.
+<ul>
+  <li>⬜ Criar model <code>Categoria</code></li>
+  <li>⬜ Criar model <code>Produto</code></li>
+  <li>⬜ Criar migrations</li>
+  <li>⬜ Implementar catálogo</li>
+  <li>⬜ Implementar autenticação</li>
+  <li>⬜ Criar carrinho</li>
+  <li>⬜ Desenvolver frontend</li>
+  <li>⬜ Implementar checkout</li>
+  <li>⬜ Criar integração HTTP com Spring Boot</li>
+</ul>
 
-É um projeto de porte médio, mas totalmente viável em ~5 semanas trabalhando em paralelo, e fica muito bem em portfólio por simular uma arquitetura real de mercado.
+<h3>Spring Boot</h3>
+
+<ul>
+  <li>✅ Criar projeto Spring Boot</li>
+  <li>✅ Criar domínio <code>Pedido</code></li>
+  <li>✅ Criar domínio <code>ItemPedido</code></li>
+  <li>✅ Criar <code>StatusPedido</code></li>
+  <li>✅ Criar DTOs</li>
+  <li>✅ Criar Mapper</li>
+  <li>✅ Implementar cálculo do total</li>
+  <li>✅ Implementar regra de aprovação</li>
+  <li>✅ Implementar Repository com JDBC</li>
+  <li>✅ Implementar transação de persistência</li>
+  <li>✅ Implementar <code>POST /api/pedidos</code></li>
+  <li>✅ Implementar validação dos dados recebidos</li>
+  <li>⬜ Implementar <code>GET /api/pedidos/{id}</code></li>
+  <li>⬜ Melhorar tratamento global de exceções</li>
+  <li>⬜ Aumentar cobertura de testes</li>
+</ul>
+
+<h3>Integração</h3>
+
+<ul>
+  <li>⬜ Definir contrato final entre os serviços</li>
+  <li>⬜ Implementar chamada Django → Spring</li>
+  <li>⬜ Testar comunicação entre os serviços</li>
+  <li>⬜ Testar fluxo completo de compra</li>
+  <li>⬜ Implementar autenticação entre serviços</li>
+</ul>
+
+<hr>
+
+<h2>🌱 Possíveis Expansões</h2>
+
+<p>
+Depois que o fluxo principal estiver funcionando, o projeto poderá evoluir
+com funcionalidades como:
+</p>
+
+<ul>
+  <li>🐳 Docker</li>
+  <li>🐳 Docker Compose</li>
+  <li>🐘 PostgreSQL</li>
+  <li>🔑 JWT</li>
+  <li>🔐 Autenticação entre serviços</li>
+  <li>📖 Swagger / OpenAPI</li>
+  <li>🐇 RabbitMQ</li>
+  <li>⚡ Processamento assíncrono</li>
+  <li>🔔 Sistema de notificações</li>
+  <li>📋 Histórico detalhado de pedidos</li>
+  <li>📊 Painel administrativo</li>
+  <li>🚀 Deploy</li>
+  <li>📈 Observabilidade e logs estruturados</li>
+</ul>
+
+<p>
+Essas funcionalidades são consideradas <b>extras</b> e não fazem parte
+do núcleo atual do projeto.
+</p>
+
+<hr>
+
+<h2>🎯 Objetivos de Aprendizado</h2>
+
+<h3>Java / Spring Boot</h3>
+
+<ul>
+  <li>Programação Orientada a Objetos</li>
+  <li>Arquitetura em camadas</li>
+  <li>REST APIs</li>
+  <li>Spring Boot</li>
+  <li>Bean Validation</li>
+  <li>DTOs</li>
+  <li>Mappers</li>
+  <li>Regras de negócio</li>
+  <li>JDBC</li>
+  <li>SQL</li>
+  <li>Transações</li>
+  <li>Persistência</li>
+  <li>Integração entre serviços</li>
+</ul>
+
+<h3>Python / Django</h3>
+
+<ul>
+  <li>Django</li>
+  <li>Models</li>
+  <li>Views</li>
+  <li>Autenticação</li>
+  <li>ORM</li>
+  <li>Desenvolvimento web</li>
+  <li>JavaScript</li>
+  <li>Integração HTTP</li>
+  <li>Consumo de APIs</li>
+</ul>
+
+<h3>Arquitetura e Engenharia</h3>
+
+<ul>
+  <li>Arquitetura distribuída</li>
+  <li>Comunicação entre serviços</li>
+  <li>Contratos de API</li>
+  <li>Separação de responsabilidades</li>
+  <li>Bancos de dados independentes</li>
+  <li>Git e desenvolvimento colaborativo</li>
+</ul>
+
+<hr>
+
+<h2>📌 Resumo</h2>
+
+<p>
+O projeto consiste em um marketplace dividido em dois serviços:
+</p>
+
+<pre>
+┌─────────────────────┐
+│       Django        │
+│                     │
+│ Catálogo            │
+│ Usuários            │
+│ Carrinho            │
+│ Frontend            │
+└──────────┬──────────┘
+           │
+           │ REST / JSON
+           ▼
+┌─────────────────────┐
+│    Spring Boot      │
+│                     │
+│ Pedidos             │
+│ Regras de negócio   │
+│ JDBC                │
+│ Persistência        │
+└─────────────────────┘
+</pre>
+
+<p>
+Atualmente, o <b>Spring Boot possui o fluxo básico de criação e persistência
+de pedidos implementado</b>, enquanto o <b>Django está na fase inicial de
+construção da aplicação</b>.
+</p>
+
+<p>
+O objetivo final é criar um fluxo completo de compra no qual o usuário
+navega pelo catálogo Django, adiciona produtos ao carrinho, finaliza a
+compra e o pedido é processado pelo microsserviço Spring Boot.
+</p>
+
+<hr>
+
+<p align="center">
+  <b>🚀 Projeto em desenvolvimento</b>
+  <br>
+  Java • Spring Boot • JDBC • SQL • Django • REST
+</p>
