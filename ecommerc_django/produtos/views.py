@@ -5,7 +5,7 @@ from .models import Product
 
 
 def home(request):
-    return render(request, 'ecommerc_django/produtos/templates/home.html')
+    return render(request, 'home.html')
 
 
 class ProductSerializer(APIView):
