@@ -1,0 +1,36 @@
+### Java / Maven (pedidos) ###
+pedidos/target/
+*.class
+*.jar
+*.war
+HELP.md
+
+### IDEs ###
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+### Spring Boot ###
+pedidos/src/main/resources/application-local.properties
+pedidos/src/main/resources/application-*.properties
+!pedidos/src/main/resources/application.properties
+
+### Python / Django (ecommerc_django) ###
+ecommerc_django/**/__pycache__/
+*.py[cod]
+ecommerc_django/venv/
+ecommerc_django/env/
+ecommerc_django/*.sqlite3
+ecommerc_django/media/
+ecommerc_django/staticfiles/
+ecommerc_django/.env
+
+### Sistema operacional ###
+.DS_Store
+Thumbs.db
+
+### Logs ###
+*.log
