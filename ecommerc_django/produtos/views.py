@@ -1,6 +1,5 @@
 from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from .serializers import ProductSerializer
 from .models import Product
 
@@ -9,12 +8,6 @@ def home(request):
     return render(request, 'home.html')
 
 
-class ProductView(APIView):
-    queryset = Product.objects.all()
-
-    def get(self, request):
-        produtos = self.queryset
-
-        serializer = ProductSerializer(produtos, many=True)
-
-        return Response(serializer.data)
+class ProductView(ListAPIView):
+    queryset = Product.objects.filter(active=True)
+    serializer_class = ProductSerializer

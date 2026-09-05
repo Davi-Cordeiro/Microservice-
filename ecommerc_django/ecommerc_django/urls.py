@@ -7,5 +7,5 @@ from produtos.views import home
 urlpatterns = [
     path('', home, name='home'),
     path('admin/', admin.site.urls),
-    path('api/', include('produtos.urls'))
+    path('produto/', include('produtos.urls'))
 ]
