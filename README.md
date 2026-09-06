@@ -1,68 +1,72 @@
 <h1 align="center">🛒 Marketplace Distribuído</h1>
 
 <p align="center">
-  <strong>Arquitetura de microsserviços com Django + Spring Boot</strong>
+  Projeto de estudo de uma aplicação de e-commerce distribuída, construída com Django e Spring Boot.
 </p>
 
 <p align="center">
-  Projeto de estudo focado em backend, APIs REST, JDBC, SQL, testes e comunicação entre serviços.
-</p>
-
-<p align="center">
-  🚧 <strong>Em desenvolvimento</strong>
+  <b>Django</b> é responsável por catálogo, usuários, carrinho e interface web,
+  enquanto <b>Spring Boot</b> processa os pedidos.
 </p>
 
 ---
 
 ## 🧩 Arquitetura
 
+O projeto é dividido em dois serviços independentes, cada um com responsabilidades próprias.
+
 ```text
-                    ┌─────────────────────┐
-                    │      Frontend       │
-                    │       Django        │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │   Django Service    │
-                    │                     │
-                    │ • Usuários          │
-                    │ • Catálogo          │
-                    │ • Carrinho          │
-                    │ • Frontend          │
-                    └──────────┬──────────┘
-                               │
-                         REST / JSON
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ Spring Boot Service │
-                    │                     │
-                    │ • Pedidos           │
-                    │ • Regras de negócio │
-                    │ • JDBC              │
-                    │ • Persistência      │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                         🗄️ Banco de Dados
+                         ┌──────────────────────┐
+                         │        Usuário       │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                    ┌─────────────────────────────┐
+                    │       Django Service        │
+                    │                             │
+                    │  • Usuários                 │
+                    │  • Catálogo                 │
+                    │  • Carrinho                 │
+                    │  • Interface Web            │
+                    └──────────────┬──────────────┘
+                                   │
+                              REST / JSON
+                                   │
+                                   ▼
+                    ┌─────────────────────────────┐
+                    │    Spring Boot Service      │
+                    │                             │
+                    │  • Processamento de pedidos │
+                    │  • Regras de negócio        │
+                    │  • Persistência com JDBC    │
+                    └──────────────┬──────────────┘
+                                   │
+                                   ▼
+                              🗄️ Banco de Dados
 ```
 
-Cada serviço possui **responsabilidades e banco de dados próprios**, mantendo o projeto desacoplado.
+### Serviços
+
+| Serviço       | Tecnologia         | Responsabilidade                             |
+| ------------- | ------------------ | -------------------------------------------- |
+| 🐍 Django     | Python / Django    | Usuários, catálogo, carrinho e interface web |
+| ☕ Spring Boot | Java / Spring Boot | Processamento e persistência de pedidos      |
+
+Os serviços são independentes e se comunicam através de **HTTP utilizando REST e JSON**.
 
 ---
 
 ## ⚙️ Tecnologias
 
-### Django
+### 🐍 Django Service
 
 * Python
 * Django
-* SQLite/MySQL
-* HTML/CSS
+* HTML / CSS
+* SQLite / MySQL
 * REST
 
-### Spring Boot
+### ☕ Spring Boot Service
 
 * Java
 * Spring Boot
@@ -76,54 +80,55 @@ Cada serviço possui **responsabilidades e banco de dados próprios**, mantendo 
 
 ---
 
-## 📌 Estado do projeto
+## 📌 Estado atual
 
-### 🟢 Spring Boot
+### ☕ Spring Boot
 
-* [x] Estrutura inicial
-* [x] Modelagem de `Pedido`
-* [x] Modelagem de `ItemPedido`
-* [x] Status do pedido
-* [x] DTOs
-* [x] Mapper
-* [x] Validação
-* [x] Regra de aprovação
-* [x] Repository com JDBC
-* [x] Transações
-* [x] `POST /api/pedidos`
-* [x] `GET /api/pedidos/{id}`
-* [x] Tratamento de pedido não encontrado
-* [x] Testes automatizados
+* ✅ Estrutura inicial
+* ✅ Modelagem de `Pedido`
+* ✅ Modelagem de `ItemPedido`
+* ✅ Status do pedido
+* ✅ DTOs
+* ✅ Mapper
+* ✅ Validação
+* ✅ Regra de aprovação
+* ✅ Repository com JDBC
+* ✅ Transações
+* ✅ `POST /api/pedidos`
+* ✅ `GET /api/pedidos/{id}`
+* ✅ Tratamento de pedido não encontrado
+* ✅ Testes automatizados
 
-### 🟡 Django
+### 🐍 Django
 
-* [x] Estrutura inicial
-* [ ] Cadastro de usuários
-* [ ] Catálogo de produtos
-* [ ] Carrinho
-* [ ] Frontend
-* [ ] Integração com Spring Boot
-* [ ] Fluxo completo de criação de pedidos
+* ⬜ Estrutura inicial do projeto
+* ⬜ App `produtos`
+* ⬜ Modelagem do catálogo
+* ⬜ Usuários
+* ⬜ Produtos
+* ⬜ Carrinho
+* ⬜ Frontend
+* ⬜ Integração com Spring Boot
 
 ---
 
-## 🛍️ Domínio
+## 📦 Domínio de Pedidos
 
 ### `Pedido`
 
-Representa uma compra realizada pelo usuário.
+Representa uma compra realizada no marketplace.
 
-Possui:
+Responsável por agrupar os itens e armazenar informações como:
 
 * ID
 * Usuário
 * Valor total
 * Status
-* Itens
+* Itens do pedido
 
 ### `ItemPedido`
 
-Representa um produto dentro de um pedido.
+Representa um produto pertencente a um pedido.
 
 Possui:
 
@@ -142,13 +147,15 @@ RECUSADO
 
 ## 🌐 API
 
+O serviço Spring Boot disponibiliza endpoints para gerenciamento de pedidos.
+
 ### Criar pedido
 
 ```http
 POST /api/pedidos
 ```
 
-Exemplo:
+Exemplo de requisição:
 
 ```json
 {
@@ -169,53 +176,105 @@ Exemplo:
 GET /api/pedidos/{id}
 ```
 
+Retorna os dados do pedido quando encontrado.
+
+Caso o pedido não exista, a API retorna uma resposta de **recurso não encontrado (`404 Not Found`)**.
+
 ---
 
 ## 💰 Regra de negócio
 
-O pedido é avaliado pelo valor total:
+O pedido passa por uma regra de aprovação baseada no valor total:
 
 ```text
-Total <= R$ 5.000,00 → APROVADO
+Total <= R$ 5.000,00
+        ↓
+    APROVADO
 
-Total > R$ 5.000,00 → RECUSADO
+Total > R$ 5.000,00
+        ↓
+    RECUSADO
 ```
 
-A regra está isolada em um serviço específico:
+A regra está isolada no:
 
 ```text
 RegraAprovacaoService
 ```
 
-Isso mantém a regra de negócio separada da camada de persistência e dos controllers.
+Dessa forma, a regra de negócio não fica acoplada ao controller ou à camada de persistência.
+
+---
+
+## 🧱 Arquitetura do Spring Boot
+
+O serviço segue uma arquitetura em camadas:
+
+```text
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+Database
+```
+
+Também são utilizados:
+
+```text
+DTOs
+Mapper
+Domain Models
+Exceptions
+Validation
+```
+
+### Fluxo de criação
+
+```text
+HTTP Request
+     ↓
+Controller
+     ↓
+Validation
+     ↓
+Service
+     ↓
+Regra de aprovação
+     ↓
+Repository
+     ↓
+Database
+     ↓
+HTTP Response
+```
 
 ---
 
 ## 🗄️ Persistência
 
-O serviço Spring Boot utiliza **JDBC puro**, sem JPA/Hibernate.
+A persistência do Spring Boot utiliza **JDBC puro**, sem JPA ou Hibernate.
 
 Principais recursos utilizados:
 
-```text
-DataSource
-Connection
-PreparedStatement
-ResultSet
-Transactions
-Generated Keys
-```
+* `DataSource`
+* `Connection`
+* `PreparedStatement`
+* `ResultSet`
+* Generated Keys
+* Transactions
 
-A criação de um pedido ocorre dentro de uma transação:
+A criação de um pedido e seus itens ocorre dentro de uma única transação:
 
 ```text
 BEGIN
   ↓
-Criar Pedido
+Inserir Pedido
   ↓
 Obter ID gerado
   ↓
-Criar Itens
+Inserir Itens
   ↓
 COMMIT
 ```
@@ -226,11 +285,13 @@ Em caso de erro:
 ROLLBACK
 ```
 
+Isso garante que o pedido não seja parcialmente persistido.
+
 ---
 
 ## 🧪 Testes
 
-O projeto possui testes para diferentes camadas do serviço de pedidos:
+O módulo de pedidos possui testes automatizados para diferentes responsabilidades:
 
 * Controller
 * Service
@@ -239,48 +300,47 @@ O projeto possui testes para diferentes camadas do serviço de pedidos:
 * Regras de negócio
 * Validações
 
-Objetivo:
-
-> Garantir que cada camada funcione de forma independente e que as regras principais do sistema sejam verificadas automaticamente.
+O objetivo é verificar o comportamento das principais camadas antes da integração entre os serviços.
 
 ---
 
 ## 🗺️ Roadmap
 
-### Backend
+### 🐍 Django
 
-* [x] Pedido
-* [x] Persistência JDBC
-* [x] Regras de aprovação
-* [x] API REST
-* [x] Testes
-* [ ] Tratamento global de exceções
-* [ ] Integração Django → Spring
-* [ ] Testes de integração
+* ⬜ Modelar produtos
+* ⬜ Implementar catálogo
+* ⬜ Implementar usuários
+* ⬜ Implementar carrinho
+* ⬜ Desenvolver frontend
+* ⬜ Criar fluxo de checkout
+* ⬜ Integrar com Spring Boot
 
-### Django
+### ☕ Spring Boot
 
-* [ ] Usuários
-* [ ] Produtos
-* [ ] Carrinho
-* [ ] Frontend
-* [ ] Comunicação com Spring Boot
+* ⬜ Melhorias na API
+* ⬜ Tratamento global de exceções
+* ⬜ Testes de integração
 
-### Infraestrutura
+### 🔗 Microsserviços
 
-* [ ] Docker
-* [ ] Docker Compose
-* [ ] Configuração por ambiente
-* [ ] Documentação da API
+* ⬜ Comunicação Django → Spring Boot
+* ⬜ Fluxo completo de checkout
+* ⬜ Tratamento de falhas entre serviços
+* ⬜ Docker
+* ⬜ Docker Compose
+* ⬜ Configuração por ambiente
 
 ---
 
 ## 🎯 Objetivos de aprendizado
 
-Este projeto foi criado para praticar conceitos de backend e arquitetura de sistemas, principalmente:
+Este projeto foi criado para praticar conceitos de desenvolvimento backend e arquitetura distribuída:
 
 * Java
 * Spring Boot
+* Python
+* Django
 * SQL
 * JDBC
 * REST APIs
@@ -294,9 +354,9 @@ Este projeto foi criado para praticar conceitos de backend e arquitetura de sist
 
 ---
 
-## 🚀 Próximo grande objetivo
+## 🚀 Fluxo esperado
 
-Transformar os dois serviços em um fluxo completo:
+Quando o projeto estiver completo, o fluxo principal será:
 
 ```text
 Usuário
@@ -305,11 +365,13 @@ Django
    ↓
 Catálogo / Carrinho
    ↓
-Criação do Pedido
+Checkout
    ↓
 Spring Boot
    ↓
-Validação + Regra de Negócio
+Validação
+   ↓
+Regra de negócio
    ↓
 Persistência
    ↓
@@ -318,8 +380,8 @@ Resposta
 
 ---
 
-<p align="center">
-  <strong>🚧 Projeto em desenvolvimento</strong>
-  <br>
-  Construído para aprender, experimentar e evoluir.
-</p>
+## 📚 Sobre o projeto
+
+Este projeto faz parte do processo de aprendizado de desenvolvimento backend, com foco em **Java, Spring Boot, SQL, JDBC e arquitetura de microsserviços**.
+
+A ideia é construir o sistema de forma incremental, aplicando na prática conceitos de arquitetura, persistência, APIs REST, testes e comunicação entre serviços.
