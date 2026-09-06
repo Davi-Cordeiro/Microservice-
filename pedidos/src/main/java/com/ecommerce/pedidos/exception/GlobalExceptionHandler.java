@@ -44,4 +44,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.internalServerError().body(corpo);
     }
+
+    @ExceptionHandler(PedidoNaoEncontradoException.class)
+    public ResponseEntity<ErroResponseDTO> tratarNaoEncontrado(PedidoNaoEncontradoException ex) {
+        ErroResponseDTO corpo = new ErroResponseDTO(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Pedido não encontrado",
+                ex.getMessage(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(corpo);
+    }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.ecommerce.pedidos.dto.PedidoMapper;
 import com.ecommerce.pedidos.dto.PedidoRequestDTO;
 import com.ecommerce.pedidos.dto.PedidoResponseDTO;
+import com.ecommerce.pedidos.exception.PedidoNaoEncontradoException;
 import com.ecommerce.pedidos.model.Pedido;
 import com.ecommerce.pedidos.model.StatusPedido;
 import com.ecommerce.pedidos.repository.PedidoRepository;
@@ -31,6 +32,13 @@ public class PedidoService {
 
         Long id = pedidoRepository.salvar(pedido);
         pedido.setId(id);
+
+        return PedidoMapper.paraResponseDTO(pedido);
+    }
+
+    public PedidoResponseDTO buscarPorId(Long id) {
+        Pedido pedido = pedidoRepository.buscarPorId(id)
+                .orElseThrow(() -> new PedidoNaoEncontradoException(id));
 
         return PedidoMapper.paraResponseDTO(pedido);
     }
