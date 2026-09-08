@@ -82,6 +82,19 @@ Os serviços são independentes e se comunicam através de **HTTP utilizando RES
 
 ## 📌 Estado atual
 
+> ✅ concluído · 🟨 parcial / em andamento · ⬜ pendente
+
+### 🐍 Django
+
+* ✅ Estrutura inicial do projeto
+* ✅ App `produtos`
+* 🟨 Modelagem do catálogo (falta preço, estoque e categoria no model `Product`)
+* ✅ Endpoint de listagem de produtos (`GET /produto/api/`)
+* ⬜ Usuários / autenticação
+* ⬜ Carrinho
+* 🟨 Frontend (página inicial simples, sem catálogo renderizado)
+* ⬜ Integração com Spring Boot
+
 ### ☕ Spring Boot
 
 * ✅ Estrutura inicial
@@ -99,22 +112,24 @@ Os serviços são independentes e se comunicam através de **HTTP utilizando RES
 * ✅ Tratamento de pedido não encontrado
 * ✅ Testes automatizados
 
-### 🐍 Django
-
-* ⬜ Estrutura inicial do projeto
-* ⬜ App `produtos`
-* ⬜ Modelagem do catálogo
-* ⬜ Usuários
-* ⬜ Produtos
-* ⬜ Carrinho
-* ⬜ Frontend
-* ⬜ Integração com Spring Boot
-
 ---
 
-## 📦 Domínio de Pedidos
+## 📦 Domínio
 
-### `Pedido`
+### 🐍 Django — `Product`
+
+Representa um item do catálogo disponível para venda.
+
+Possui atualmente:
+
+* ID
+* Nome (`product_name`)
+* Descrição
+* Situação (`active`)
+
+> Em construção: preço, estoque e categoria ainda serão adicionados ao model — sem eles, o catálogo não consegue alimentar o payload de pedido esperado pelo Spring Boot (`precoUnitario`).
+
+### ☕ Spring Boot — `Pedido`
 
 Representa uma compra realizada no marketplace.
 
@@ -126,7 +141,7 @@ Responsável por agrupar os itens e armazenar informações como:
 * Status
 * Itens do pedido
 
-### `ItemPedido`
+#### `ItemPedido`
 
 Representa um produto pertencente a um pedido.
 
@@ -136,7 +151,7 @@ Possui:
 * Quantidade
 * Preço
 
-### `StatusPedido`
+#### `StatusPedido`
 
 ```text
 APROVADO
@@ -147,9 +162,34 @@ RECUSADO
 
 ## 🌐 API
 
+### 🐍 Django
+
+```http
+GET /produto/api/
+```
+
+Lista os produtos com `active=True` do catálogo.
+
+Exemplo de resposta:
+
+```json
+[
+  {
+    "id": 1,
+    "product_name": "Camiseta Básica",
+    "description": "Camiseta 100% algodão",
+    "active": true
+  }
+]
+```
+
+> Endpoints ainda não implementados: autenticação (`/contas/...`), carrinho (`/carrinho/...`) e checkout (`/pedidos/finalizar/`) — este último é quem vai chamar a API do Spring Boot abaixo.
+
+### ☕ Spring Boot
+
 O serviço Spring Boot disponibiliza endpoints para gerenciamento de pedidos.
 
-### Criar pedido
+#### Criar pedido
 
 ```http
 POST /api/pedidos
@@ -170,7 +210,7 @@ Exemplo de requisição:
 }
 ```
 
-### Buscar pedido
+#### Buscar pedido
 
 ```http
 GET /api/pedidos/{id}
@@ -182,7 +222,7 @@ Caso o pedido não exista, a API retorna uma resposta de **recurso não encontra
 
 ---
 
-## 💰 Regra de negócio
+## 💰 Regra de negócio (Spring Boot)
 
 O pedido passa por uma regra de aprovação baseada no valor total:
 
@@ -206,7 +246,25 @@ Dessa forma, a regra de negócio não fica acoplada ao controller ou à camada d
 
 ---
 
-## 🧱 Arquitetura do Spring Boot
+## 🧱 Arquitetura em camadas
+
+### 🐍 Django
+
+```text
+URLConf
+    ↓
+View
+    ↓
+Serializer
+    ↓
+Model (ORM)
+    ↓
+Database
+```
+
+Hoje só existe a camada de leitura (`ProductView` → `ProductSerializer` → `Product`). Views de autenticação, carrinho e checkout ainda serão adicionadas seguindo essa mesma estrutura.
+
+### ☕ Spring Boot
 
 O serviço segue uma arquitetura em camadas:
 
@@ -254,6 +312,12 @@ HTTP Response
 
 ## 🗄️ Persistência
 
+### 🐍 Django
+
+A persistência do Django utiliza o **ORM padrão do framework** — os models em `models.py` geram o SQL automaticamente através de migrations (`makemigrations` / `migrate`), sem necessidade de escrever queries manualmente. Banco atual: SQLite (`db.sqlite3`), local.
+
+### ☕ Spring Boot
+
 A persistência do Spring Boot utiliza **JDBC puro**, sem JPA ou Hibernate.
 
 Principais recursos utilizados:
@@ -291,6 +355,12 @@ Isso garante que o pedido não seja parcialmente persistido.
 
 ## 🧪 Testes
 
+### 🐍 Django
+
+Ainda não há testes automatizados (`tests.py` está vazio). É prioridade no roadmap escrever testes de model e serializer com `TestCase` / `APITestCase` antes de avançar para carrinho e checkout.
+
+### ☕ Spring Boot
+
 O módulo de pedidos possui testes automatizados para diferentes responsabilidades:
 
 * Controller
@@ -308,11 +378,11 @@ O objetivo é verificar o comportamento das principais camadas antes da integra�
 
 ### 🐍 Django
 
-* ⬜ Modelar produtos
-* ⬜ Implementar catálogo
-* ⬜ Implementar usuários
+* 🟨 Modelar produtos (falta preço, estoque e categoria)
+* ⬜ Escrever testes automatizados
+* ⬜ Implementar usuários / autenticação
 * ⬜ Implementar carrinho
-* ⬜ Desenvolver frontend
+* ⬜ Desenvolver frontend (renderizar catálogo, não só a home)
 * ⬜ Criar fluxo de checkout
 * ⬜ Integrar com Spring Boot
 
@@ -337,10 +407,10 @@ O objetivo é verificar o comportamento das principais camadas antes da integra�
 
 Este projeto foi criado para praticar conceitos de desenvolvimento backend e arquitetura distribuída:
 
-* Java
-* Spring Boot
 * Python
 * Django
+* Java
+* Spring Boot
 * SQL
 * JDBC
 * REST APIs
@@ -382,6 +452,6 @@ Resposta
 
 ## 📚 Sobre o projeto
 
-Este projeto faz parte do processo de aprendizado de desenvolvimento backend, com foco em **Java, Spring Boot, SQL, JDBC e arquitetura de microsserviços**.
+Este projeto faz parte do processo de aprendizado de desenvolvimento backend, com foco em **Python, Django e DRF** de um lado, e **Java, Spring Boot, SQL e JDBC** do outro — unidos por uma arquitetura de microsserviços.
 
-A ideia é construir o sistema de forma incremental, aplicando na prática conceitos de arquitetura, persistência, APIs REST, testes e comunicação entre serviços.
+A ideia é construir os dois serviços de forma incremental, aplicando na prática conceitos de arquitetura, persistência, APIs REST, testes e comunicação entre serviços.
