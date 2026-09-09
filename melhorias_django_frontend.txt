@@ -1,0 +1,130 @@
+MELHORIAS SUGERIDAS - DJANGO E FRONTEND
+Projeto: Marketplace Distribuido (Django + Spring Boot)
+Gerado em: 2026-09-08
+
+
+1. MODELO DE DADOS (produtos/models.py)
+----------------------------------------
+- Adicionar campo de preco (DecimalField). Hoje o catalogo nao tem preco,
+  o que impede montar o payload de pedido esperado pelo Spring Boot
+  (campo "precoUnitario" no contrato de API).
+- Adicionar campo de estoque (PositiveIntegerField).
+- Adicionar categoria (ForeignKey para um novo model Categoria).
+- Adicionar campo de imagem (ImageField) para exibir no catalogo.
+- Padronizar o idioma dos nomes: hoje o model esta em ingles
+  (Product, product_name), mas o resto do projeto (README, Spring Boot)
+  usa portugues (Produto, Pedido). Escolher um padrao unico evita confusao
+  conforme o projeto cresce.
+
+
+2. ADMIN (produtos/admin.py)
+----------------------------------------
+- Registrar o model Product no admin.site (admin.site.register(Product)),
+  para conseguir cadastrar/editar produtos sem precisar do shell do Django.
+- Configurar list_display, search_fields e list_filter para facilitar a
+  administracao do catalogo a medida que ele cresce.
+
+
+3. API / SERIALIZERS
+----------------------------------------
+- Adicionar paginacao (DEFAULT_PAGINATION_CLASS no REST_FRAMEWORK do
+  settings.py), para nao devolver o catalogo inteiro em uma unica resposta.
+- Adicionar filtros de busca (django-filter) por nome, categoria e faixa
+  de preco.
+- Expor endpoint de detalhe (RetrieveAPIView) alem da listagem atual.
+
+
+4. AUTENTICACAO (app "contas", ainda nao existe)
+----------------------------------------
+- Endpoint de registro de usuario (username, email, senha).
+- Endpoint de login retornando um token (rest_framework.authtoken ou
+  JWT via djangorestframework-simplejwt).
+- Adicionar o app de autenticacao escolhido ao INSTALLED_APPS e configurar
+  DEFAULT_AUTHENTICATION_CLASSES no REST_FRAMEWORK.
+- Proteger as rotas de carrinho/checkout com permission_classes = [IsAuthenticated].
+
+
+5. CARRINHO (app "carrinho", ainda nao existe)
+----------------------------------------
+- Model ItemCarrinho (usuario, produto, quantidade).
+- View para adicionar item ao carrinho.
+- View para remover item do carrinho.
+- View para listar os itens do carrinho do usuario logado.
+- Regra de unicidade: um usuario nao deveria ter duas entradas do mesmo
+  produto (usar get_or_create e somar a quantidade quando ja existir).
+
+
+6. INTEGRACAO COM O SPRING BOOT
+----------------------------------------
+- Criar a camada responsavel por montar o payload e chamar a API do
+  Spring Boot via requests (ex: pedidos/services.py).
+- Usar variavel de ambiente (SPRING_BOOT_URL) em vez de hardcode da URL.
+- Definir timeout curto (ex: 5s) e tratar excecoes de conexao
+  (ConnectionError, Timeout) mostrando mensagem amigavel ao usuario.
+- Ao concluir a compra com sucesso, limpar o carrinho do usuario.
+
+
+7. TESTES
+----------------------------------------
+- tests.py esta vazio atualmente.
+- Sugestao de testes minimos para comecar:
+  * Model: __str__, valores padrao (active=True).
+  * Serializer: campos corretos, validacao.
+  * View: GET /produto/api/ retorna somente produtos ativos; paginacao
+    funcionando.
+  * Mock da chamada HTTP ao Spring Boot ao testar o fluxo de checkout
+    (unittest.mock ou biblioteca "responses"), para nao depender do
+    servico estar no ar durante os testes.
+
+
+8. CONFIGURACAO / SEGURANCA
+----------------------------------------
+- Mover SECRET_KEY para variavel de ambiente (hoje esta hardcoded e
+  commitada no settings.py). Se o repositorio for publico, essa chave
+  ja esta exposta e vale gerar uma nova.
+- Mover configuracao de banco e SPRING_BOOT_URL para variaveis de
+  ambiente (django-environ ou python-decouple).
+- Criar um arquivo .env.example documentando as variaveis esperadas.
+- Remover db.sqlite3 e os *.pyc ja commitados do controle de versao
+  (git rm --cached ...), ja que o .gitignore atual so afeta arquivos
+  novos, nao os que ja estavam rastreados antes dele existir.
+
+
+9. FRONTEND (templates/home.html, static/)
+----------------------------------------
+- Hoje existe apenas uma home.html estatica, sem renderizar o catalogo
+  e sem nenhum CSS aplicado.
+- Criar um template base.html com blocks (titulo, conteudo, scripts) e
+  fazer home.html/catalogo.html herdarem dele, evitando repetir
+  <head>, menu, rodape, etc.
+- Renderizar o catalogo de produtos, com duas opcoes possiveis:
+  * Server-side: view Django tradicional que passa o queryset de
+    produtos direto pro template.
+  * Client-side (mais proximo do planejamento original do README):
+    pagina que consome a API via fetch() e monta os cards em JS.
+- Adicionar Tailwind (via CDN para comecar, ou build com django-tailwind
+  ou npm depois) - hoje nao ha nenhum estilo aplicado ao template.
+- Estruturar pastas static/css e static/js, e configurar STATICFILES_DIRS
+  no settings.py.
+- Fechar a tag <body> que esta faltando em home.html (bug pequeno,
+  mas real - o HTML atual nao fecha a tag corretamente).
+- Adicionar interacoes em JS para:
+  * Adicionar/remover item do carrinho sem recarregar a pagina
+    (fetch + header X-CSRFToken).
+  * Botao "Finalizar Compra" com estado de carregamento (spinner)
+    enquanto aguarda a resposta do Spring Boot.
+  * Tratamento de erro visivel ao usuario caso o Spring Boot esteja
+    fora do ar (mensagem amigavel, nao tela quebrada).
+- Feedback visual (toast ou alerta) ao adicionar um produto ao carrinho.
+- Responsividade basica (mobile-first), que o Tailwind facilita bastante.
+
+
+PRIORIDADE SUGERIDA
+----------------------------------------
+1. Preco/estoque no model Product (bloqueia todo o resto do fluxo de compra).
+2. SECRET_KEY fora do codigo (seguranca).
+3. Admin registrado (facilita testar tudo o que vem depois).
+4. Testes basicos de model/serializer/view.
+5. Carrinho + autenticacao.
+6. Frontend consumindo a API real (Tailwind + JS).
+7. Integracao com o Spring Boot (services.py + tratamento de erro).
