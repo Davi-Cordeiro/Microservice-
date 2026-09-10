@@ -24,6 +24,7 @@ class ValidadeProductForm(views.View):
     def post(self, request, *args, **kwargs):
         form = ProductForm(request.POST)
         if form.is_valid():
+            form.save()
             return JsonResponse({'valid': True})
         else:
             return JsonResponse({'valid': False, 'errors': form.errors})
