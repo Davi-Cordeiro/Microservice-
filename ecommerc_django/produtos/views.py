@@ -1,5 +1,5 @@
-from django import views
-from django.http import JsonResponse, request
+from django import views, forms
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView
 from .serializers import ProductSerializer
@@ -19,6 +19,14 @@ class ProductForm(ModelForm):
     class Meta:
         model = Product
         exclude = ('active',)
+        widgets = {
+            'product_name': forms.TextInput(attrs={
+                'class': ' pl-3 text-black'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': ' pl-3 text-black'
+            }),
+        }
 
 class ValidadeProductForm(views.View):
     def post(self, request, *args, **kwargs):
@@ -31,4 +39,4 @@ class ValidadeProductForm(views.View):
 
     def get(self, request, *args, **kwargs):
         form = ProductForm()
-        return render(request, 'product_form.html', {'form': form})
+        return render(request, 'form.html', {'form': form})

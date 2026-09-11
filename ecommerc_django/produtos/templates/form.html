@@ -3,10 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'produtos/css/home.css' %}">
+    <title>Cadastro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+    <header class="border-b border-slate-800/80">
+        <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+            <span class="text-lg font-semibold">Criação dos Produtos</span>
+        </div>
+    </header>
+
+    <main class="flex flex-container">
+        <div class="mx-auto mt-20">
+            <form method="post">
+                {%  csrf_token %}
+
+                {%for field in form %}
+                    <div class="mb-4">
+                        <label for="{{field.id_for_label}}" class="font-mono text-sm  ">
+                            {{ field.label }}
+                        </label>
+                        
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <p class="font-mono text-red-400 mt-1">{{ field.errors|striptags }}</p>
+                        {% endif %}
+                        
+                    </div>
+                {% endfor%}
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </main>
 </body>
 </html>
