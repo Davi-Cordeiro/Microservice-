@@ -1,3 +1,4 @@
+{% load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,26 +17,32 @@
 
     <main class="flex flex-container">
         <div class="mx-auto mt-20">
-            <form method="post">
+            <div id="form-feedback" class="mb-4 font-mono text-sm" hidden></div>
+
+            <form method="post" id="cadastro-form">
                 {%  csrf_token %}
 
                 {%for field in form %}
-                    <div class="mb-4">
+                    <div class="mb-4" data-field="{{ field.name }}">
                         <label for="{{field.id_for_label}}" class="font-mono text-sm  ">
                             {{ field.label }}
                         </label>
-                        
+
                         {{ field }}
 
-                        {% if field.errors %}
-                            <p class="font-mono text-red-400 mt-1">{{ field.errors|striptags }}</p>
-                        {% endif %}
-                        
+                        <div data-role="field-errors">
+                            {% if field.errors %}
+                                <p class="font-mono text-red-400 mt-1">{{ field.errors|striptags }}</p>
+                            {% endif %}
+                        </div>
+
                     </div>
                 {% endfor%}
-                <button type="submit">Enviar</button>
+                <button type="submit" id="submit-btn">Enviar</button>
             </form>
         </div>
     </main>
+
+    <script src="{% static 'produtos/js/cadastro.js' %}" defer></script>
 </body>
 </html>
