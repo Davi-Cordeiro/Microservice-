@@ -11,10 +11,14 @@ class Category(models.Model):
         return self.name
 
 class Product(models.Model):
-    product_name = models.CharField(("nome do produto"), max_length=50)
+    product_name = models.CharField(("nome do produto"), max_length=50, unique=True)
     description = models.TextField(("Descrição do produto"), max_length=2000)
     created_at = models.DateTimeField(auto_now_add=True)
+<<<<<<< HEAD
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
+=======
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+>>>>>>> origin/main
     storage = models.PositiveIntegerField(default=0)
     active = models.BooleanField(default=True)
 

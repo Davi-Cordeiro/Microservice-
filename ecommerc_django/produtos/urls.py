@@ -1,9 +1,10 @@
 
 from django.urls import path
 from django.urls import include
-from .views import ProductView
+from .views import ProductView, ProductFormView
 
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
-    path('api/', ProductView.as_view(), name="produtos_api")
+    path('api/', ProductView.as_view(), name="produtos_api"),
+    path('cadastro/', ProductFormView.as_view(), name="cadastro_produto")
 ]
