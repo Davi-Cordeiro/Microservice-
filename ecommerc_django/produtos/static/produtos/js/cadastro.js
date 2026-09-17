@@ -4,6 +4,7 @@ const button = document.getElementById('submit-btn');
         event.preventDefault();
         const form = document.getElementById('cadastro-form');
         const formData = new FormData(form);
+        let html = '';
 
 
         try{
@@ -14,22 +15,19 @@ const button = document.getElementById('submit-btn');
 
             if (response.ok) {
                 const data = await response.json();
-                console.log(data);
                 
                 if (data.valid) {
-                    console.log('Produto cadastrado com sucesso!');
                     alert('Produto cadastrado com sucesso!');
                     form.reset();
 
                 } else {
-                    console.log('Erro ao cadastrar produto: '+ data.errors);
-                    alert('Erro ao cadastrar produto: ' + data.errors);
+                    html += '<p class="text-red-500 text-sm mt-2 mb-2">Erro: Verifique os campos novamente</p>' 
+                    document.getElementById('form-submission-feedback').innerHTML = html
                 }
 
             }
 
             else {
-                console.log(form.action);
                 throw new Error('Erro ao cadastrar produto: ' + response.status);
                 
             }

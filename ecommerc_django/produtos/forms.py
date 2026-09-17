@@ -9,7 +9,7 @@ class ProductForm(ModelForm):
         exclude = ('active',)
         widgets = {
             'product_name': forms.TextInput(attrs={
-                'class': ' pl-3 text-black'
+                'class': ' pl-3 group rounded-sm bg-slate-400 border-2 border-slate-700'
             }),
             'description': forms.Textarea(attrs={
                 'class': ' pl-3 text-black'
